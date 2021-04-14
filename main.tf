@@ -9,20 +9,23 @@ terraform {
 }
 
 
+
 resource "aws_instance" "myInstance" {
-  ami           = "ami-0a91cd140a1fc148a"
+  ami           = "ami-05d72852800cbf29e"
   instance_type = "t2.micro"
   key_name = "deployer-one"
   user_data = <<-EOF
 	#! /bin/bash
-	sudo apt-get update
-        sudo apt-get upgrade
-        sudo apt-get -y install docker.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
+	sudo yum update -y
+	sudo yum install -y docker
+	sudo service docker start
 	sudo docker run -p 8080:8080 somestupiddocker/terraform-aws-ec2-docker:latest
+
 	EOF
-}		
+	
+
+}	
+
 
 provider "aws" {
   profile = "default"
