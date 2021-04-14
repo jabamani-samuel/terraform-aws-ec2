@@ -16,6 +16,7 @@ resource "aws_instance" "myInstance" {
   key_name = "t2keypair"
   user_data = <<-EOF
 	#! /bin/bash
+	echo hello
 	sudo yum update -y
 	sudo yum install -y docker
 	sudo service docker start
