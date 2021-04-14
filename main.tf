@@ -13,7 +13,7 @@ terraform {
 resource "aws_instance" "myInstance" {
   ami           = "ami-05d72852800cbf29e"
   instance_type = "t2.micro"
-  key_name = "t2keypair"
+  key_name = "deployer-one"
   user_data = <<-EOF
 	#! /bin/bash
 	echo hello
