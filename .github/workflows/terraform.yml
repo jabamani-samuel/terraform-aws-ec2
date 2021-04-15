@@ -136,7 +136,7 @@ jobs:
         aws-region: us-east-2
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        instance-ids: i-0b9bc26f11c1c0d63
+        instance-ids: ${{ steps.sam_apply.outputs.sam_instanceid }}
         working-directory: /home/ec2-user
         command: "sudo docker stop $(sudo docker ps -q); sudo docker pull somestupiddocker/terraform-aws-ec2-docker:latest; sudo docker run -p 8080:8080 somestupiddocker/terraform-aws-ec2-docker:latest"
         comment: Roll-out
