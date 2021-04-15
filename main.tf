@@ -112,7 +112,7 @@ managed_policy_arns = [aws_iam_policy.sam_policy.arn]
 
 resource "aws_iam_instance_profile" "sam_ssm_profile" {
   name = "sam_ssm_profile_name"
-  role = aws_iam_role.sam_role
+  role = aws_iam_role.sam_role.name
 }
 
 
