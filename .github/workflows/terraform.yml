@@ -142,5 +142,5 @@ jobs:
         command: "sudo docker stop $(sudo docker ps -q); sudo docker pull somestupiddocker/terraform-aws-ec2-docker:latest; sudo docker run -p 8080:8080 somestupiddocker/terraform-aws-ec2-docker:latest"
         comment: Roll-out
     
-    - name: Terraform Destroy
-      run: terraform destroy -auto-approve
+    #- name: Terraform Destroy
+     # run: terraform destroy -auto-approve
