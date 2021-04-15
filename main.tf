@@ -9,30 +9,46 @@ terraform {
 }
 
 
-
 resource "aws_instance" "myInstance" {
   ami           = "ami-05d72852800cbf29e"
   instance_type = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.sam_ssm_profile.name
-
+  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
   key_name = "deployer-one"
   user_data = <<-EOF
 	#! /bin/bash
-	echo hello
 	sudo yum update -y
 	sudo yum install -y docker
 	sudo service docker start
-	sudo docker run -p 8080:8080 somestupiddocker/terraform-aws-ec2-docker:latest
-
 	EOF
 	
 
-}	
+}		
 
-#policy is attached to a role, role is attached to a profile,profile is attached to ec2 instance...there can be n policies and n roles...
+resource "aws_iam_role" "test_role" {
+  name = "ssm_role"
 
-resource "aws_iam_policy" "sam_policy" {
-  name = "sam_policy_name"
+assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+managed_policy_arns = [aws_iam_policy.policy_two.arn]
+
+  tags = {
+      tag-key = "tag-value"
+  }
+}
+
+resource "aws_iam_policy" "policy_two" {
+  name = "policy-381967"
 
   policy = jsonencode({
     "Version": "2012-10-17",
@@ -84,61 +100,16 @@ resource "aws_iam_policy" "sam_policy" {
 })
 }
 
-
-
-
-resource "aws_iam_role" "sam_role" {
-  name = "sam_ssm_role_name"
-
-assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      },
-    ]
-  })
-managed_policy_arns = [aws_iam_policy.sam_policy.arn]
-
-  tags = {
-      tag-key = "tag-value"
-  }
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "ssm_profile"
+  role = aws_iam_role.test_role.name
 }
-
-resource "aws_iam_instance_profile" "sam_ssm_profile" {
-  name = "sam_ssm_profile_name"
-  role = aws_iam_role.sam_role.name
-}
-
 
 provider "aws" {
   profile = "default"
   region  = "us-east-2"
 }
 
-resource "aws_security_group_rule" "myInstance" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 65535
-  protocol          = "all"
-  cidr_blocks 		= ["0.0.0.0/0"]
-  security_group_id = "sg-8594b8fa"
-}
-
-
-resource "aws_security_group_rule" "myInstance1" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 65535
-  protocol          = "all"
-  cidr_blocks 		= ["0.0.0.0/0"]
-  security_group_id = "sg-8594b8fa"
-}
 
 module "key_pair" {
 
@@ -151,9 +122,8 @@ module "key_pair" {
 
 
 output "DNS" {
-  value = aws_instance.myInstance.public_dns
-}
-
-output "ID" {
   value = aws_instance.myInstance.id
+}
+output "state" {
+  value = aws_instance.myInstance.instance_state
 }
