@@ -52,17 +52,17 @@ jobs:
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
         terraform apply -auto-approve
-        instanceid=$(terraform output DNS)
+        instanceid=$(terraform output ID)
         echo "::set-output name=instanceid::$instanceid"
     - name: Terrafrom Output
       run: |
-        instanceid=$(terraform output DNS)
+        instanceid=$(terraform output ID)
         echo ${{ steps.apply.outputs.instanceid }}
     - name: Print Output
       env:
-        test_variable: $(terraform output DNS)
+        test_variable: $(terraform output ID)
       run: |
-        echo $(terraform output DNS)
+        echo $(terraform output ID)
     # Instance Readiness wait
     - name: Instance Readiness Check
       run: |

@@ -121,7 +121,7 @@ module "key_pair" {
 }
 
 
-output "DNS" {
+output "ID" {
   value = aws_instance.myInstance.id
 }
 output "state" {
