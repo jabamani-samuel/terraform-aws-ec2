@@ -125,6 +125,7 @@ jobs:
         
     - name: Instance Readiness Check
       run: |
+        echo "Instance ID ${{steps.sam_apply.outputs.sam_instanceid }}"
         aws ec2 wait instance-status-ok --instance-ids ${{ steps.sam_apply.outputs.sam_instanceid }}
     # Configure aws-ssm to run the scripts from Actions
     - name: AWS SSM Rollout-Command
