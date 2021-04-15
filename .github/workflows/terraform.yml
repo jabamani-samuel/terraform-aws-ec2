@@ -114,9 +114,32 @@ jobs:
 
       # On push to master, build or change infrastructure according to Terraform configuration files
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-    - name: Terraform Apply
+    - name: Terraform Apply  # name is a placeholder which will be displayed in github action console while running.
+      id: sam_apply
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: terraform apply -auto-approve
+      #run: terraform apply -auto-approve # this will create the terraform instance and assigns the instance id to sam_apply variable
+      run: |
+        terraform apply -auto-approve
+        sam_instanceid=$(terraform output ID)  #ID is defined in main.tf
+        echo "::set-output name=sam_instanceid::$sam_instanceid" # this line is required for the line 128 to work.
+        
+    - name: Instance Readiness Check
+      run: |
+        aws ec2 wait instance-status-ok --instance-ids ${{ steps.sam_apply.outputs.sam_instanceid }}
+    # Configure aws-ssm to run the scripts from Actions
+    - name: AWS SSM Rollout-Command
+      uses: peterkimzz/aws-ssm-send-command@master
+      id: ssm
+      env:
+        AWS_INSTANCE_ID: ${{ steps.sam_apply.outputs.sam_instanceid }}
+      with:
+        aws-region: us-east-2
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        instance-ids: ${{ env.AWS_INSTANCE_ID }}
+        working-directory: /home/ec2-user
+        command: "sudo docker stop $(sudo docker ps -q); sudo docker pull somestupiddocker/terraform-aws-ec2-docker:latest; sudo docker run -p 8080:8080 somestupiddocker/terraform-aws-ec2-docker:latest"
+        comment: Roll-out
     
     #- name: Terraform Destroy
      # run: terraform destroy -auto-approve
